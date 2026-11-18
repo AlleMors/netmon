@@ -16,7 +16,8 @@ soggettiva di "internet che va lento".
 - riepilogo CLI con loss, media, p95 e massimo, più grafico SVG;
 - dashboard web **sola lettura** con auto-refresh e grafici Chart.js;
 - integrazione completa con **systemd** (timer + servizio) e **logrotate**;
-- server web in sola standard library Python.
+- server web in sola standard library Python;
+- **dati di esempio** inclusi (`sample.csv`) e **17 test** automatici in CI.
 
 ## Come funziona
 
@@ -107,6 +108,27 @@ Target            Camp.   Loss%     Avg     P95     Max
 192.168.1.1         1440    0.00     1.2     2.0     8.7
 ```
 
+## Provare con i dati di esempio
+
+Il repository include `sample.csv`: 7 giorni di campioni (≈40 000 righe)
+generati da `tools/gen_sample.py` con un seme fisso. **Sono dati simulati**,
+non misure reali, ma riproducono il comportamento tipico di una linea
+instabile (gateway stabile, congestione serale sui target Internet).
+
+```bash
+python3 netmon-report.py sample.csv --hours 168
+
+# dashboard popolata senza installare nulla
+NETMON_LOG=sample.csv NETMON_WEB_PORT=8080 python3 netmon-web.py
+```
+
+Per rigenerarlo:
+
+```bash
+python3 tools/gen_sample.py --hours 168 --end "2026-11-18T08:00:00+0000" \
+  --seed 2026 > sample.csv
+```
+
 ## Dashboard web
 
 Lo unit `netmon-web.service` espone una dashboard sulla porta **8080**
@@ -183,17 +205,33 @@ il contenuto.
 
 `logrotate` mantiene 30 giorni compressi (`/etc/logrotate.d/netmon`).
 
+## Test
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest tests -q
+```
+
+La suite (17 test) copre il parsing dei timestamp, la generazione del grafico
+SVG, gli endpoint HTTP della dashboard, l'anti-aliasing dei dati
+(`downsample`, che deve preservare i picchi) e il generatore di dati di
+esempio. La CI esegue inoltre `py_compile`, `bash -n` e `shellcheck`.
+
 ## Struttura del progetto
 
 ```text
-netmon.sh           campionamento ping → CSV
-netmon-report.py    riepilogo CLI + grafico SVG
-netmon-web.py       dashboard HTTP (solo stdlib)
-netmon.service      unit one-shot di campionamento
-netmon.timer        esegue netmon.service ogni 60 s
-netmon-web.service  unit del servizio dashboard
-netmon.logrotate    rotazione del CSV
-install.sh          installazione systemd e logrotate
+netmon.sh              campionamento ping → CSV
+netmon-report.py       riepilogo CLI + grafico SVG
+netmon-web.py          dashboard HTTP (solo stdlib)
+netmon.service         unit one-shot di campionamento
+netmon.timer           esegue netmon.service ogni 60 s
+netmon-web.service     unit del servizio dashboard
+netmon.logrotate       rotazione del CSV
+install.sh             installazione systemd e logrotate
+sample.csv             dati di esempio (7 giorni, simulati)
+tools/gen_sample.py    generatore riproducibile del CSV di esempio
+tests/                 suite pytest
+.github/workflows/     CI (sintassi, shellcheck, test)
 ```
 
 ## Sviluppi possibili
@@ -201,7 +239,7 @@ install.sh          installazione systemd e logrotate
 - alerting (es. loss > 1% per 5 min) via notifica;
 - esportazione metriche per **Prometheus + blackbox_exporter + Grafana**;
 - confronto automatico tra più punti di misura;
-- test automatici e integrazione continua.
+- database al posto del CSV per archivi molto lunghi.
 
 ## Licenza
 

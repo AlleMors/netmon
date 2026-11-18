@@ -1,0 +1,2 @@
+# Solo per lo sviluppo e i test; l'applicazione usa la standard library.
+pytest>=8.0

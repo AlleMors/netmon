@@ -38,10 +38,11 @@ def downsample(points, maxpts=MAX_POINTS):
                 for p in points]
     t0, t1 = points[0]["_ts"], points[-1]["_ts"]
     span = max(1.0, (t1 - t0).total_seconds())
-    bw = span / maxpts
+    # maxpts-1 intervalli → al più maxpts bucket (l'ultimo punto cade nel bordo)
+    bw = span / max(1, maxpts - 1)
     buckets = OrderedDict()
     for p in points:
-        k = int((p["_ts"] - t0).total_seconds() / bw)
+        k = min(maxpts - 1, int((p["_ts"] - t0).total_seconds() / bw))
         b = buckets.get(k)
         if b is None:
             b = buckets[k] = {"t": p["t"], "avg_sum": 0.0, "avg_n": 0,
