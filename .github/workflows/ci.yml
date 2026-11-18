@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sintassi Python
+        run: python -m py_compile netmon-web.py netmon-report.py
+
+      - name: Sintassi Bash
+        run: bash -n netmon.sh install.sh
+
+      - name: ShellCheck
+        run: shellcheck netmon.sh install.sh
+
+      - name: Smoke test netmon-report.py
+        run: |
+          ts=$(date -u '+%Y-%m-%dT%H:%M:%S+0000')
+          {
+            echo "timestamp,target,sent,received,loss_pct,rtt_min,rtt_avg,rtt_max,rtt_mdev"
+            echo "$ts,1.1.1.1,10,10,0.0,12.1,18.3,62.4,1.2"
+            echo "$ts,192.168.1.1,10,9,10.0,1.0,1.2,2.0,0.1"
+          } > /tmp/netmon-test.csv
+          python netmon-report.py /tmp/netmon-test.csv --hours 24

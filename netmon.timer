@@ -1,0 +1,11 @@
+[Unit]
+Description=Esegue netmon ogni 60 secondi
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+AccuracySec=1s
+Unit=netmon.service
+
+[Install]
+WantedBy=timers.target

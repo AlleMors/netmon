@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Log e dati locali (possono contenere indirizzi della tua rete)
+*.log
+*.csv
+!sample.csv
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo

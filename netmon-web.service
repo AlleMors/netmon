@@ -1,0 +1,19 @@
+[Unit]
+Description=netmon web dashboard
+Documentation=file:///usr/local/bin/netmon-web.py
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/netmon-web.py
+Environment=NETMON_LOG=/var/log/netmon/netmon.csv
+Environment=NETMON_WEB_PORT=8080
+Environment=NETMON_WEB_BIND=0.0.0.0
+Restart=on-failure
+RestartSec=5
+User=www-data
+Group=www-data
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

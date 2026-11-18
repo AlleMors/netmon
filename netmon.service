@@ -1,0 +1,12 @@
+[Unit]
+Description=Netmon — campionamento latenza/perdita (one-shot)
+Documentation=file:///usr/local/bin/netmon.sh
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/netmon.sh
+User=root
+Nice=10
+IOSchedulingClass=idle
